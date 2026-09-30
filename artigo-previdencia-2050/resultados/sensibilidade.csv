@@ -1,0 +1,14 @@
+Hipótese,Déficit RGPS 2050 (% PIB),Dívida 2050 (% PIB),"Diferença p/ Base (dívida, p.p.)"
+Base,5.74,242.47,0.0
+"Produtividade 2,0% a.a.",4.64,189.08,-53.39
+"Produtividade 0,5% a.a.",6.8,299.14,56.66
+Formalização 66% em 2050,4.97,228.65,-13.82
+Formalização 52% em 2050,6.32,252.84,10.37
+Ocupação 73% em 2050,5.27,226.84,-15.63
+Ocupação 67% em 2050,6.25,259.5,17.03
+"Juro real 3,0%",5.74,198.48,-43.99
+"Juro real 5,0%",5.74,297.46,54.99
+Benefício sem ganho real (phi=0),4.11,215.35,-27.12
+Benefício acompanha salário (phi=1),7.63,272.3,29.83
+"Sem efeito da EC 103 (benef./idoso = 1,00)",7.74,273.0,30.53
+Sem envelhecimento (estrutura etária de 2024),0.15,122.83,-119.65
