@@ -1,0 +1,3 @@
+# dados brutos (≈100 MB): baixe com codigo/00_baixar_dados.py
+dados/brutos/
+__pycache__/

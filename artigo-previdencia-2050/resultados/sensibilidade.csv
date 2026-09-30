@@ -1,14 +1,15 @@
-Hipótese,Déficit RGPS 2050 (% PIB),Dívida 2050 (% PIB),"Diferença p/ Base (dívida, p.p.)"
-Base,5.74,242.47,0.0
-"Produtividade 2,0% a.a.",4.64,189.08,-53.39
-"Produtividade 0,5% a.a.",6.8,299.14,56.66
-Formalização 66% em 2050,4.97,228.65,-13.82
-Formalização 52% em 2050,6.32,252.84,10.37
-Ocupação 73% em 2050,5.27,226.84,-15.63
-Ocupação 67% em 2050,6.25,259.5,17.03
-"Juro real 3,0%",5.74,198.48,-43.99
-"Juro real 5,0%",5.74,297.46,54.99
-Benefício sem ganho real (phi=0),4.11,215.35,-27.12
-Benefício acompanha salário (phi=1),7.63,272.3,29.83
-"Sem efeito da EC 103 (benef./idoso = 1,00)",7.74,273.0,30.53
-Sem envelhecimento (estrutura etária de 2024),0.15,122.83,-119.65
+Hipótese,Déficit RGPS+BPC 2050,Ano dívida > 100%,Ajuste necessário (p.p.),Diferença p/ central (p.p.)
+"Produtividade 0,3% a.a.",10.12,2030,7.11,1.18
+"Produtividade 1,8% a.a.",6.77,2032,4.71,-1.22
+Formalização -8% em 2050,8.63,2031,6.13,0.2
+Formalização +8% em 2050,7.76,2031,5.74,-0.2
+Ocupação -4% em 2050,8.34,2031,6.08,0.15
+Ocupação +4% em 2050,8.11,2031,5.79,-0.14
+"Juro real 3,5%",8.2,2033,4.78,-1.15
+"Juro real 6,5%",8.2,2030,7.04,1.1
+Taxas de benefício de 2024 constantes,7.89,2031,5.88,-0.05
+"Tendência das taxas 1,5 vez a observada",8.76,2031,6.13,0.2
+SM sem ganho real,6.34,2031,5.06,-0.88
+SM acompanha produtividade,7.94,2031,5.7,-0.24
+Deriva de composição pré-reforma (2012-2019),12.55,2030,7.59,1.66
+Deriva de composição nula,9.27,2031,6.36,0.42

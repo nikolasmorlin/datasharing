@@ -1,0 +1,6 @@
+,Sem reação fiscal,"Com reação fiscal (0,05)"
+P(dívida 2035 > 100%),0.916,0.882
+P(dívida 2050 > nível de 2025),0.998,0.996
+P(dívida 2050 > 150%),0.974,0.922
+Ano mediano em que passa de 100%,2030.0,2031.0
+P(não passa de 100% até 2050),0.006,0.01
