@@ -1,0 +1,42 @@
+@font-face{font-family:Anton;src:url(/node_modules/@fontsource/anton/files/anton-latin-400-normal.woff2) format('woff2');font-display:block}
+@font-face{font-family:Oswald;font-weight:500;src:url(/node_modules/@fontsource/oswald/files/oswald-latin-500-normal.woff2) format('woff2');font-display:block}
+@font-face{font-family:Oswald;font-weight:700;src:url(/node_modules/@fontsource/oswald/files/oswald-latin-700-normal.woff2) format('woff2');font-display:block}
+@font-face{font-family:Inter;font-weight:500;src:url(/node_modules/@fontsource/inter/files/inter-latin-500-normal.woff2) format('woff2');font-display:block}
+@font-face{font-family:Inter;font-weight:600;src:url(/node_modules/@fontsource/inter/files/inter-latin-600-normal.woff2) format('woff2');font-display:block}
+@font-face{font-family:Inter;font-weight:800;src:url(/node_modules/@fontsource/inter/files/inter-latin-800-normal.woff2) format('woff2');font-display:block}
+:root{--orange:#ff5a36;--cream:#f4efe6;--yellow:#ffc640;--ink:#0b0d14}
+html,body{margin:0;background:#000;overflow:hidden}
+#stage{position:relative;width:540px;height:960px;overflow:hidden;background:#000;font-family:Inter,sans-serif;color:var(--cream)}
+#gl{position:absolute;inset:0;width:540px;height:960px;display:block}
+#hud,#fade{position:absolute;inset:0;pointer-events:none}
+#hud>div{position:absolute;inset:0;display:none}
+#hud>div.on{display:block}
+#fade{background:#000;opacity:0}
+#brand{position:absolute;left:22px;top:58px;font:600 9px/1 Inter;letter-spacing:.32em;color:rgba(244,239,230,.82);display:flex;align-items:center;gap:6px;text-shadow:0 1px 3px rgba(0,0,0,.6)}
+#brand i{width:5px;height:5px;border-radius:50%;background:var(--orange);display:block;box-shadow:0 0 6px var(--orange)}
+/* ---- captions (big condensed, word highlights) ---- */
+#cap{position:absolute;left:0;right:0;top:598px;height:0;display:flex;justify-content:center;align-items:center}
+#capin{width:490px;text-align:center;font:400 47px/1.08 Anton,Impact,sans-serif;letter-spacing:.012em;text-transform:uppercase;color:#fff;
+  -webkit-text-stroke:7px var(--ink);paint-order:stroke fill;text-shadow:0 4px 0 rgba(6,8,14,.9),0 10px 22px rgba(0,0,0,.55);will-change:transform}
+#capin b{font-weight:400;color:var(--orange)}
+#capin u{text-decoration:none;color:var(--yellow)}
+#capin.big{font-size:86px;line-height:1}
+#capin.mid{font-size:60px}
+/* ---- HUD atoms ---- */
+.tag{position:absolute;transform:translate(-50%,-50%);font:700 17px/1 Oswald;letter-spacing:.14em;text-transform:uppercase;padding:6px 10px 6px;border-radius:3px;background:var(--orange);color:#fff;white-space:nowrap;box-shadow:0 4px 14px rgba(0,0,0,.35)}
+.tag.dark{background:rgba(12,15,24,.82);color:var(--cream);border:1px solid rgba(244,239,230,.18)}
+.tag.cream{background:var(--cream);color:#151821}
+.tag.green{background:#2f8f5b}
+.lbl{position:absolute;transform:translate(-50%,-50%);font:800 12px/1.2 Inter;letter-spacing:.28em;text-transform:uppercase;color:rgba(244,239,230,.9);white-space:nowrap;text-shadow:0 1px 4px rgba(0,0,0,.9);text-align:center}
+.lbl.o{color:var(--orange)}
+.num{position:absolute;transform:translate(-50%,-50%);font:700 30px/1 Oswald;letter-spacing:.04em;color:#fff;white-space:nowrap;text-shadow:0 2px 10px rgba(0,0,0,.8)}
+.timer{position:absolute;left:50%;top:128px;transform:translate(-50%,0);text-align:center;padding:9px 20px 8px;border-radius:12px;background:rgba(10,12,20,.72);border:1.5px solid rgba(255,90,54,.9);box-shadow:0 0 24px rgba(255,90,54,.28),inset 0 0 18px rgba(255,90,54,.12)}
+.timer .d{font:700 44px/1 Oswald;letter-spacing:.05em;color:#fff;font-variant-numeric:tabular-nums}
+.timer .s{font:600 8px/1 Inter;letter-spacing:.34em;color:var(--orange);margin-top:6px;text-transform:uppercase}
+.title{position:absolute;left:0;right:0;text-align:center;font:400 170px/1 Anton;color:#fff;text-transform:uppercase;letter-spacing:.01em;text-shadow:0 6px 30px rgba(0,0,0,.7)}
+.title small{display:block;font:700 30px/1 Oswald;letter-spacing:.5em;color:var(--orange);margin-bottom:6px;padding-left:.5em}
+.sub{position:absolute;left:0;right:0;text-align:center;font:700 26px/1.2 Oswald;letter-spacing:.06em;text-transform:uppercase;color:var(--cream);text-shadow:0 3px 14px rgba(0,0,0,.8)}
+.sub b{color:var(--orange);font-weight:700}
+.panel{position:absolute;background:rgba(10,12,20,.74);border:1px solid rgba(244,239,230,.16);border-radius:12px;backdrop-filter:blur(6px);box-shadow:0 12px 40px rgba(0,0,0,.45)}
+.bar{position:absolute;height:8px;border-radius:5px;background:rgba(244,239,230,.16);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--orange);border-radius:5px;box-shadow:0 0 10px var(--orange)}
