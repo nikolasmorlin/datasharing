@@ -24,9 +24,9 @@ export function diagram(c, { sunR = .95 } = {}) {
   const grid = makeGrid({ size: 64, well: 2.4, a: 2.2 }); const sun = makeSun(sunR); sun.position.y = .15;
   const earth = makeEarth(.34, { seg: 64 });
   const orbit = new THREE.Mesh(new THREE.TorusGeometry(AU, .012, 6, 200), new THREE.MeshBasicMaterial({ color: 0xbfd4ff, transparent: true, opacity: .32 })); orbit.rotation.x = Math.PI / 2;
-  const ring = new THREE.Mesh(new THREE.TorusGeometry(1, .012, 8, 160), new THREE.MeshBasicMaterial({ color: new THREE.Color(1.7, .55, .2) })); ring.rotation.x = Math.PI / 2;
-  const ghost = new THREE.Mesh(new THREE.TorusGeometry(sunR, .01, 6, 90), new THREE.MeshBasicMaterial({ color: 0xff7a4a, transparent: true, opacity: .55 }));
-  const trail = new THREE.Mesh(new THREE.CylinderGeometry(.045, .045, 1, 8), new THREE.MeshBasicMaterial({ color: new THREE.Color(2.2, .65, .25) })); trail.visible = false;
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(1, .012, 8, 160), new THREE.MeshBasicMaterial({ color: new THREE.Color(1.6, 1.2, .55) })); ring.rotation.x = Math.PI / 2;
+  const ghost = new THREE.Mesh(new THREE.TorusGeometry(sunR, .01, 6, 90), new THREE.MeshBasicMaterial({ color: 0xf4f0e8, transparent: true, opacity: .55 }));
+  const trail = new THREE.Mesh(new THREE.CylinderGeometry(.045, .045, 1, 8), new THREE.MeshBasicMaterial({ color: new THREE.Color(1.6, 1.2, .55) })); trail.visible = false;
   const link = new THREE.Mesh(new THREE.CylinderGeometry(.014, .014, 1, 6), new THREE.MeshBasicMaterial({ color: 0xf4efe6, transparent: true, opacity: .8 })); link.visible = false; c.scene.add(link);
   c.scene.add(grid, sun, earth, orbit, ring, ghost, trail);
   c.post.bloom = .42; c.post.threshold = .95; c.post.radius = .5;
@@ -53,40 +53,48 @@ export function diagram(c, { sunR = .95 } = {}) {
   };
 }
 
-// ---------- brand outro ("além da tela") ----------
-export function brandOutro(c) {
-  c.scene.background = new THREE.Color(0x12151f);
-  const g = new THREE.Group();
-  const shape = new THREE.Shape(); const w = 1.0, h = 1.62, r = .16;
-  shape.moveTo(-w / 2 + r, -h / 2); shape.lineTo(w / 2 - r, -h / 2); shape.quadraticCurveTo(w / 2, -h / 2, w / 2, -h / 2 + r); shape.lineTo(w / 2, h / 2 - r); shape.quadraticCurveTo(w / 2, h / 2, w / 2 - r, h / 2);
-  shape.lineTo(-w / 2 + r, h / 2); shape.quadraticCurveTo(-w / 2, h / 2, -w / 2, h / 2 - r); shape.lineTo(-w / 2, -h / 2 + r); shape.quadraticCurveTo(-w / 2, -h / 2, -w / 2 + r, -h / 2);
-  const slab = new THREE.Mesh(new THREE.ExtrudeGeometry(shape, { depth: .09, bevelEnabled: true, bevelSize: .015, bevelThickness: .015, bevelSegments: 3, curveSegments: 20 }), new THREE.MeshStandardMaterial({ color: 0xf4efe6, roughness: .7, envMap: c.env, envMapIntensity: .25 }));
-  slab.castShadow = true; g.add(slab);
-  const half = (col, flip, basic) => { const m = new THREE.Mesh(new THREE.CylinderGeometry(.36, .36, .03, 64, 1, false, flip ? 0 : Math.PI, Math.PI), basic ? new THREE.MeshBasicMaterial({ color: col }) : new THREE.MeshStandardMaterial({ color: col, roughness: .6 })); m.rotation.x = Math.PI / 2; return m; };
-  const sunG = new THREE.Group(); const dark = half(0x12151f, false), bright = half(new THREE.Color(1.45, .34, .16), true, true); sunG.add(dark, bright); sunG.position.set(w / 2, .16, .125); g.add(sunG);
-  const glow = makeGlow(2.6, 0xff5a36); glow.position.set(w / 2 + .2, .16, -.2); glow.material.opacity = .0; g.add(glow);
-  g.position.y = .55; c.scene.add(g);
-  const key = new THREE.DirectionalLight(0xffffff, .95); key.position.set(-2, 3, 5); c.scene.add(key, new THREE.AmbientLight(0x8890a8, .3));
-  const word = c.hud('além da tela', '', 'position:absolute;left:0;right:0;top:590px;text-align:center;font:600 41px/1 Inter;letter-spacing:-.02em;color:#f4efe6');
-  const line = c.hud('', '', 'position:absolute;left:50%;top:652px;height:1.5px;background:rgba(244,239,230,.7);transform:translateX(-50%)');
-  c.post.bloom = .3; c.post.threshold = 1.05; c.post.vig = .6; c.brand = 0;
-  return (t) => {
-    const k = eback(seg(t, .1, .7)); g.scale.setScalar(lerp(.6, 1, k)); slab.material.opacity = 1; g.rotation.y = lerp(-.9, 0, eo(seg(t, .1, 1.0))) + Math.sin(t * .8) * .04;
-    const s = eo(seg(t, .55, 1.25)); sunG.position.x = lerp(.1, w / 2, s); sunG.scale.setScalar(lerp(.2, 1, s)); bright.visible = dark.visible = s > .01;
-    glow.material.opacity = .16 * s;
-    word.style.opacity = seg(t, .9, 1.4); word.style.transform = `translateY(${lerp(14, 0, eo(seg(t, .9, 1.5)))}px)`;
-    line.style.width = lerp(0, 46, eo(seg(t, 1.3, 1.9))) + 'px';
-    c.look([0, .5, 7.2], [0, .2, 0], 30); c.fade = 1 - seg(t, 0, .25);
+// ---------- brand (manual: symbol = screen w:h 1:1.7705, corner r .35w; circle r .4675w centred on the right edge) ----------
+export const LOGO = { w: 1, h: 1.7705, rc: .35, r: .4675 };
+// Flat SVG symbol. variant 'reversa' (on navy: creme screen, navy opening) or 'principal' (on creme: navy screen, creme opening).
+// anim: { screen 0..1, hole 0..1, slide 0..1 } drives the opening animation without stretching, rotating or recolouring the mark.
+export function logoSVG(px, variant = 'reversa', anim = { screen: 1, hole: 1, slide: 1 }) {
+  const { w, h, rc, r } = LOGO, sc = px / h;  // px = screen height in CSS px
+  const screenCol = variant === 'reversa' ? '#F4F0E8' : '#14171F', holeCol = variant === 'reversa' ? '#14171F' : '#F4F0E8';
+  const W = (w + r) * sc, Hh = h * sc, cx = w * sc, cy = h / 2 * sc, R = r * sc * anim.hole;
+  const k = anim.screen, sx = w * sc, sy = h * sc;
+  const off = (1 - anim.slide) * -R;                    // coral half starts inside the opening and slides out
+  return `<svg width="${W.toFixed(1)}" height="${Hh.toFixed(1)}" viewBox="0 0 ${W.toFixed(2)} ${Hh.toFixed(2)}">
+    <defs><clipPath id="scr${px | 0}"><rect width="${sx}" height="${sy}" rx="${rc * sc}" ry="${rc * sc}"/></clipPath></defs>
+    <g transform="translate(${sx / 2} ${sy / 2}) scale(${k}) translate(${-sx / 2} ${-sy / 2})" opacity="${Math.min(1, k * 1.4)}">
+      <rect width="${sx}" height="${sy}" rx="${rc * sc}" ry="${rc * sc}" fill="${screenCol}"/>
+      ${R > .1 ? `<path d="M ${cx} ${cy - R} A ${R} ${R} 0 0 0 ${cx} ${cy + R} Z" fill="${holeCol}"/>
+      <path transform="translate(${off} 0)" d="M ${cx} ${cy - R} A ${R} ${R} 0 0 1 ${cx} ${cy + R} Z" fill="#FF5B3A"/>` : ''}
+    </g></svg>`;
+}
+
+// Abertura (manual 09): symbol in the first second: the screen appears, the opening forms, the coral half slides out.
+export function brandOpen(c) {
+  c.scene.background = new THREE.Color(0x14171f); c.post.bloom = 0; c.brand = 0;
+  const el = c.hud('', 'mark', 'left:270px;top:470px');
+  return t => {
+    const a = { screen: eback(seg(t, 0, .28)), hole: eo(seg(t, .2, .45)), slide: eio(seg(t, .4, .78)) };
+    el.innerHTML = logoSVG(150, 'reversa', a);
+    c.look([0, 0, 5], [0, 0, 0], 35); c.fadeColor = '#14171F'; c.fade = seg(t, .82, 1.0) * 0;  // next shot fades in from navy
   };
 }
 
-// ---------- end card (PARTE N + question) ----------
-export function endCard(c, { part, q, cta = 'SIGA PARA NÃO PERDER' }) {
-  const title = c.hud(`<small>PARTE</small>${part}`, 'title', 'top:270px'); const sub = c.hud(q, 'sub', 'top:505px;padding:0 40px;font-size:34px');
-  const foot = c.hud(cta, 'lbl', 'left:50%;top:630px;opacity:.7');
-  return (t) => {
-    const a = eback(seg(t, .15, .55)); title.style.opacity = seg(t, .15, .4); title.style.transform = `scale(${lerp(.7, 1, a)})`;
-    sub.style.opacity = seg(t, .7, 1.0); sub.style.transform = `translateY(${lerp(16, 0, eo(seg(t, .7, 1.2)))}px)`;
-    foot.style.opacity = .7 * seg(t, 1.4, 1.8);
+// Encerramento (manual 09, ~2 s): symbol, name and one open question. No long text.
+export function brandClose(c, { q, label = '' }) {
+  c.scene.background = new THREE.Color(0x14171f); c.post.bloom = 0; c.brand = 0;
+  const mark = c.hud(logoSVG(116, 'reversa'), 'mark', 'left:270px;top:350px');
+  const lab = label ? c.hud(label, 'lbl', 'left:50%;top:458px;font-size:11px') : null;
+  const qq = c.hud(q, 'question', 'top:478px');
+  const wm = c.hud('além da tela', 'wordmark', 'top:640px');
+  return t => {
+    const k = eo(seg(t, 0, .35)); mark.style.opacity = k; mark.style.transform = `translate(-50%,-50%) translateY(${lerp(10, 0, k)}px)`;
+    if (lab) lab.style.opacity = seg(t, .15, .4);
+    const k2 = eo(seg(t, .12, .45)); qq.style.opacity = k2; qq.style.transform = `translateY(${lerp(12, 0, k2)}px)`;
+    const k3 = eo(seg(t, .3, .6)); wm.style.opacity = k3;
+    c.look([0, 0, 5], [0, 0, 0], 35); c.fade = 1 - seg(t, 0, .18);
   };
 }

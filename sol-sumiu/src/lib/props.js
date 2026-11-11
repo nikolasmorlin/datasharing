@@ -28,7 +28,7 @@ export function makeSnowField(c, { snowfall = true, light = 1 } = {}) {
   const pr = c.renderer.getPixelRatio(); c.scene.background = new THREE.Color(0x010207);
   const stars = makeStars({ pr, count: 5200, size: 1.25 }), dome = makeSkyDome(.6); c.scene.add(stars, dome);
   const gb = TEX.groundBump.clone(); gb.wrapS = gb.wrapT = THREE.RepeatWrapping; gb.repeat.set(40, 40); gb.needsUpdate = true;
-  const ground = new THREE.Mesh(new THREE.PlaneGeometry(700, 700, 1, 1), std(0xdfe8f6, { bumpMap: gb, bumpScale: 2.5, roughness: .85 })); ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; c.scene.add(ground);
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(700, 700, 1, 1), std(0xdfe6f0, { roughness: .85 })); ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; c.scene.add(ground);
   const R = rng(4); for (let i = 0; i < 10; i++) { const h = new THREE.Mesh(new THREE.SphereGeometry(1, 24, 12), std(0xc9d6ec, { roughness: 1 })); const a = -Math.PI + i / 9 * Math.PI; h.position.set(Math.cos(a) * 150 * (1 + R() * .3), -5, Math.sin(a) * 150 - 30); h.scale.set(50 + R() * 50, 16 + R() * 22, 40); c.scene.add(h); }
   const hemi = new THREE.HemisphereLight(0x6f8fd8, 0x1a2540, .22 * light); const moon = sunLight(c.scene, { color: 0x8fb0ff, intensity: .5 * light, pos: [-8, 12, -6], size: 14 }); c.scene.add(hemi);
   c.scene.fog = new THREE.Fog(0x030611, 25, 260);
@@ -46,10 +46,10 @@ export function makeThermo(c, { min = -30, max = 20 } = {}) {
   const glass = new THREE.MeshStandardMaterial({ color: 0xdff0ff, transparent: true, opacity: .13, roughness: .08, metalness: .1, envMap: c.env, envMapIntensity: .45 });
   const tube = new THREE.Mesh(new THREE.CapsuleGeometry(.085, H * .82, 8, 24), glass); tube.position.set(.15, H * .5 + .08, 0); g.add(tube);
   const bulbG = new THREE.Mesh(new THREE.SphereGeometry(.2, 32, 24), glass); bulbG.position.set(.15, -.12, 0); g.add(bulbG);
-  const red = new THREE.MeshStandardMaterial({ color: 0xff3d1f, emissive: 0xff2a10, emissiveIntensity: .3, roughness: .3 });
+  const red = new THREE.MeshStandardMaterial({ color: 0xffc861, emissive: 0xffc861, emissiveIntensity: .3, roughness: .3 });
   const bulb = new THREE.Mesh(new THREE.SphereGeometry(.155, 32, 24), red); bulb.position.copy(bulbG.position); g.add(bulb);
   const liq = new THREE.Mesh(new THREE.CylinderGeometry(.06, .06, 1, 20), red); g.add(liq);
-  g.userData = { yFor(v) { return -.1955 + 2.591 * (v - min) / (max - min); }, set(v) { const top = g.userData.yFor(clamp(v, min, max)); const h = top + .12; liq.scale.y = Math.max(.01, h); liq.position.set(.15, -.12 + h / 2, 0); const k = seg(v, 15, -25); red.color.setRGB(lerp(1, .35, k), lerp(.24, .6, k), lerp(.12, 1, k)); red.emissive.copy(red.color); } };
+  g.userData = { yFor(v) { return -.1955 + 2.591 * (v - min) / (max - min); }, set(v) { const top = g.userData.yFor(clamp(v, min, max)); const h = top + .12; liq.scale.y = Math.max(.01, h); liq.position.set(.15, -.12 + h / 2, 0); const k = seg(v, 15, -25); red.color.setRGB(lerp(1, .56, k), lerp(.78, .74, k), lerp(.38, .95, k)); red.emissive.copy(red.color); } };
   return g;
 }
 
@@ -87,14 +87,14 @@ export function makeCrops({ rows = 7, per = 16, gap = .95, len = 12, seed = 5 } 
 
 // ---------- small house ----------
 export function makeHouse(c) {
-  const g = new THREE.Group(); const wall = std(0xe9e1d2, { roughness: .9 }), roof = std(0xd24a2c, { roughness: .7 });
+  const g = new THREE.Group(); const wall = std(0xe9e1d2, { roughness: .9 }), roof = std(0x3e5a80, { roughness: .7 });
   g.add(box(3.2, 2.1, 2.6, wall, 0, 1.05, 0));
   const rg = new THREE.Mesh(new THREE.CylinderGeometry(.01, 2.05, 1.5, 4, 1), roof); rg.rotation.y = Math.PI / 4; rg.scale.set(1.25, 1, 1.02); rg.position.y = 2.85; rg.castShadow = true; g.add(rg);
   const snowCap = new THREE.Mesh(new THREE.CylinderGeometry(.01, 1.5, 1.05, 4, 1), std(0xf2f6ff, { roughness: 1 })); snowCap.rotation.y = Math.PI / 4; snowCap.scale.set(1.25, 1, 1.02); snowCap.position.y = 3.12; g.add(snowCap);
   g.add(box(.5, .9, .5, std(0x7a6f66), .85, 3.1, -.3));
-  const winM = new THREE.MeshBasicMaterial({ color: new THREE.Color(1.5, .8, .28) }); const win = new THREE.Mesh(new THREE.PlaneGeometry(.8, .8), winM); win.position.set(.65, 1.2, 1.305); g.add(win);
+  const winM = new THREE.MeshBasicMaterial({ color: new THREE.Color(1.4, 1.05, .55) }); const win = new THREE.Mesh(new THREE.PlaneGeometry(.8, .8), winM); win.position.set(.65, 1.2, 1.305); g.add(win);
   g.add(box(.84, .06, .04, wall, .65, 1.2, 1.32), box(.06, .84, .04, wall, .65, 1.2, 1.32), box(.75, 1.45, .06, std(0x6b4a34), -.75, .73, 1.31));
-  const l = new THREE.PointLight(0xffb060, 3.5, 9, 1.7); l.position.set(.65, 1.2, 2.3); g.add(l);
+  const l = new THREE.PointLight(0xffd27a, 3.5, 9, 1.7); l.position.set(.65, 1.2, 2.3); g.add(l);
   const smoke = makePuffs({ n: 10, rise: 2.6, spread: .5, size: [.3, 1.3], life: 4, op: .28, seed: 4, color: 0xcfd6e6 }); smoke.position.set(.85, 3.6, -.3); g.add(smoke);
   g.userData = { smoke, l, winM }; return g;
 }
@@ -106,13 +106,13 @@ export function makePlant(c) {
   const fires = [], smokes = [];
   for (const [x, h] of [[-1.2, 8.5], [1.3, 7.2], [3.2, 6.2]]) {
     g.add(cyl(.42, .62, h, con, x, h / 2, -1.2, 20));
-    for (const yy of [h - .5, h - 1.3]) g.add(cyl(.47, .47, .25, std(0xd24a2c), x, yy, -1.2, 20));
-    const f = makeGlow(2.2, 0xff7a2a); f.position.set(x, h + .15, -1.2); g.add(f); fires.push(f);
-    const l = new THREE.PointLight(0xff7a30, 14, 14, 1.6); l.position.set(x, h + .6, -1.2); g.add(l);
+    for (const yy of [h - .5, h - 1.3]) g.add(cyl(.47, .47, .25, std(0xe9e3d6), x, yy, -1.2, 20));
+    const f = makeGlow(2.2, 0xffc861); f.position.set(x, h + .15, -1.2); g.add(f); fires.push(f);
+    const l = new THREE.PointLight(0xffc27a, 14, 14, 1.6); l.position.set(x, h + .6, -1.2); g.add(l);
     const s = makePuffs({ n: 14, rise: 6.5, spread: 1.5, size: [.9, 4.2], life: 5.5, op: .5, seed: x * 10 + 30, color: 0x9aa0ad }); s.position.set(x, h + .2, -1.2); g.add(s); smokes.push(s);
   }
-  for (let i = 0; i < 7; i++) { const w = new THREE.Mesh(new THREE.PlaneGeometry(.5, .35), new THREE.MeshBasicMaterial({ color: new THREE.Color(1.3, .75, .28) })); w.position.set(-2.8 + i * .95, 1.5, 1.71); g.add(w); }
-  const l2 = new THREE.PointLight(0xffa860, 10, 12, 1.6); l2.position.set(0, 1.6, 4); g.add(l2);
+  for (let i = 0; i < 7; i++) { const w = new THREE.Mesh(new THREE.PlaneGeometry(.5, .35), new THREE.MeshBasicMaterial({ color: new THREE.Color(1.3, 1.0, .55) })); w.position.set(-2.8 + i * .95, 1.5, 1.71); g.add(w); }
+  const l2 = new THREE.PointLight(0xffd27a, 10, 12, 1.6); l2.position.set(0, 1.6, 4); g.add(l2);
   g.userData = { set(t) { smokes.forEach(s => s.userData.set(t)); fires.forEach((f, i) => f.scale.setScalar(2.1 + Math.sin(t * 9 + i * 2) * .25 + Math.sin(t * 23 + i) * .12)); } };
   return g;
 }
@@ -121,7 +121,7 @@ export function makePlant(c) {
 export const ll = (lat, lon, R = 1) => { const a = lat * Math.PI / 180, o = lon * Math.PI / 180; return new THREE.Vector3(Math.cos(o) * Math.cos(a) * R, Math.sin(a) * R, -Math.sin(o) * Math.cos(a) * R); };
 export const HOT = [[64.9, -18.5], [44.4, -110.6], [-23, -68], [35.4, 138.7], [-7.5, 110.4], [-38.6, 176], [40.8, 14.4], [-3, 36], [56, 160.6], [19.5, -155.5], [14.6, -90.9], [61.3, -152.2], [-0.4, -78.4], [38.7, -28.2]];
 export function addHotspots(body, R = 1) {
-  const list = HOT.map(([la, lo], i) => { const s = makeGlow(.16, i === 0 ? 0xff5a36 : 0xff8a3a); s.position.copy(ll(la, lo, R * 1.012)); body.add(s); const core = new THREE.Mesh(new THREE.SphereGeometry(.011, 10, 8), new THREE.MeshBasicMaterial({ color: new THREE.Color(3, 1.3, .5) })); core.position.copy(s.position); body.add(core); return { s, core }; });
+  const list = HOT.map(([la, lo], i) => { const s = makeGlow(.16, 0xffc861); s.position.copy(ll(la, lo, R * 1.012)); body.add(s); const core = new THREE.Mesh(new THREE.SphereGeometry(.011, 10, 8), new THREE.MeshBasicMaterial({ color: new THREE.Color(2.2, 1.7, .8) })); core.position.copy(s.position); body.add(core); return { s, core }; });
   return { list, set(t, k = 1) { list.forEach((h, i) => { const p = clamp(k * 1.6 - i * .04); h.s.scale.setScalar((i === 0 ? .26 : .15) * p * (1 + .25 * Math.sin(t * 3 + i * 1.7))); h.core.visible = p > .05; }); } };
 }
 

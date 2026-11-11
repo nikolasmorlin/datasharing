@@ -5,7 +5,7 @@ const pr = Number(q.get('pr') || 2);
 try {
   const mod = await import(`./parts/part${part}.js`);
   await loadTextures(mod.textures || {});
-  await Promise.all(['400 40px Anton', '700 20px Oswald', '500 20px Oswald', '500 12px Inter', '600 12px Inter', '800 12px Inter'].map(f => document.fonts.load(f, 'Aáçã0')));
+  await Promise.all(['500 20px "Inter Tight"', '600 20px "Inter Tight"', '400 12px Inter', '500 12px Inter', '600 12px Inter'].map(f => document.fonts.load(f, 'Aáçã0')));
   await document.fonts.ready;
   const engine = new Engine({ shots: mod.shots, pr });
   window.ENGINE = engine;

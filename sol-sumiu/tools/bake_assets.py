@@ -131,7 +131,64 @@ def bake_ground(w=1024, seed=3):
 
 if __name__ == '__main__':
     which = sys.argv[1:] or ['clouds', 'moon', 'ice', 'ground']
+    if which == ['style']: which = []
     if 'clouds' in which: bake_clouds()
     if 'moon' in which: bake_moon()
     if 'ice' in which: bake_ice_earth()
     if 'ground' in which: bake_ground()
+
+
+# ---------------- stylized (brand manual: illustration, never photo) ----------------
+def _clean(mask, size=5, passes=2):
+    im = Image.fromarray((mask * 255).astype(np.uint8))
+    for _ in range(passes): im = im.filter(ImageFilter.MedianFilter(size))
+    return np.asarray(im).astype(np.float32) / 255 > .5
+
+def bake_stylized(w=4096, h=2048):
+    day = np.asarray(Image.open(os.path.join(SRC, 'img/earth-blue-marble.jpg')).convert('RGB').resize((w, h), Image.LANCZOS)).astype(np.float32) / 255
+    water = np.asarray(Image.open(os.path.join(SRC, 'img/earth-water.png')).convert('L').resize((w, h), Image.LANCZOS)).astype(np.float32) / 255
+    topo = np.asarray(Image.open(os.path.join(SRC, 'img/earth-topology.png')).convert('L').resize((w, h), Image.LANCZOS)).astype(np.float32) / 255
+    sea = _clean(water > .5, 7)
+    r, g, b = day[..., 0], day[..., 1], day[..., 2]; lum = day.mean(-1)
+    lat = np.abs(np.linspace(90, -90, h))[:, None] * np.ones((1, w))
+    snow = _clean(((lum > .62) & (np.abs(r - b) < .12)) | (lat > 74), 7) & ~sea
+    green = _clean((g > r * 1.02) & (g > b * 1.05) & (lum < .45), 7) & ~sea & ~snow
+    high = _clean(topo > .38, 5) & ~sea & ~snow
+    C = lambda hx: np.array([int(hx[i:i + 2], 16) for i in (1, 3, 5)], np.float32)
+    out = np.zeros((h, w, 3), np.float32)
+    out[:] = C('#d8c39a')                       # dry land (sand)
+    out[green] = C('#6f9a62')                   # vegetation
+    out[high & ~green] = C('#b79e78')           # highlands
+    out[high & green] = C('#5e8756')
+    out[snow] = C('#f4f0e8')                    # ice / snow (brand creme)
+    shelf = np.asarray(Image.fromarray((~sea * 255).astype(np.uint8)).filter(ImageFilter.MaxFilter(17))).astype(np.float32) > 127
+    out[sea] = C('#2b5c94'); out[sea & shelf] = C('#3a73ad')
+    out[sea & (lat > 70)] = C('#dfe7f0')        # sea ice
+    save(out, 'earth_style.jpg', 92)
+    # frozen Earth: two whites and a pale ice-blue sea
+    ice = np.zeros((h, w, 3), np.float32); ice[:] = C('#e3e7ee'); ice[high] = C('#c9d0db'); ice[sea] = C('#a9c2de'); ice[sea & shelf] = C('#bcd0e6')
+    crack = fbm(*[a * 18 for a in sphere_grid(w, h)[:3]], 4, 5, ridged=True) > .86
+    ice[sea & crack] = C('#8eabd0')
+    save(ice, 'earth_ice_style.jpg', 92)
+    save(sea * 255, 'earth_watermask.jpg', 85)
+    # city lights as crisp dots
+    night = np.asarray(Image.open(os.path.join(SRC, 'img/earth-night.jpg')).convert('L').resize((w, h), Image.LANCZOS)).astype(np.float32) / 255
+    dots = (night > .32).astype(np.float32) + (night > .55) * .6
+    dots = np.asarray(Image.fromarray((np.clip(dots, 0, 1) * 255).astype(np.uint8)).filter(ImageFilter.MaxFilter(3))).astype(np.float32)
+    save(dots, 'earth_lights.jpg', 90)
+
+def bake_clouds_style():
+    im = Image.open(os.path.join(SRC, 'clouds/clouds.png')).convert('RGBA').resize((2048, 1024), Image.LANCZOS)
+    a = np.asarray(im).astype(np.float32); alpha = a[..., 3] * (a[..., :3].mean(-1) / 255.0) / 255
+    m = np.asarray(Image.fromarray((alpha * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(5))).astype(np.float32) / 255
+    out = np.clip((m - .42) * 9, 0, 1) * .95
+    save(out * 255, 'clouds_style.jpg', 90)
+
+def bake_moon_style():
+    alb = np.asarray(Image.open(os.path.join(OUT, 'moon.jpg')).convert('L')).astype(np.float32) / 255
+    q = np.digitize(np.asarray(Image.fromarray((alb * 255).astype(np.uint8)).filter(ImageFilter.MedianFilter(5))).astype(np.float32) / 255, [.42, .55, .66])
+    pal = np.array([[118, 122, 134], [152, 155, 164], [184, 186, 192], [214, 214, 216]], np.float32)
+    save(pal[q], 'moon_style.jpg', 92)
+
+if __name__ == '__main__' and 'style' in sys.argv[1:]:
+    bake_stylized(); bake_clouds_style(); bake_moon_style()

@@ -1,0 +1,14 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><link rel="stylesheet" href="/src/style.css"><script type="importmap">{"imports":{"three":"/src/three-styled.js","three/addons/":"/node_modules/three/examples/jsm/"}}</script>
+<style>#c{position:relative;width:540px;height:960px;background:var(--navy);overflow:hidden;font-family:Inter}
+.rot{position:absolute;left:44px;top:300px;font:600 11px/1 Inter;letter-spacing:.28em;color:var(--coral);text-transform:uppercase}
+.tit{position:absolute;left:44px;width:340px;top:330px;font:600 52px/1.02 'Inter Tight';letter-spacing:-.03em;color:var(--creme)}
+.half{position:absolute;width:248px;height:248px;border-radius:50%;background:var(--coral);right:-124px;top:466px}
+.sym{position:absolute;left:44px;top:766px}</style></head><body>
+<div id="c"><div class="rot"></div><div class="tit"></div><div class="half"></div><div class="sym"></div></div>
+<script type="module">
+import { logoSVG } from '/src/lib/common.js';
+const q = new URLSearchParams(location.search);
+document.querySelector('.rot').textContent = q.get('rot'); document.querySelector('.tit').textContent = q.get('t');
+document.querySelector('.sym').innerHTML = logoSVG(70, 'reversa');
+await document.fonts.ready; window.READY = true;
+</script></body></html>

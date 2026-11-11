@@ -9,7 +9,8 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
 export const W = 540, H = 960, FPS = 30;
-export const ORANGE = 0xff5a36, CREAM = 0xf4efe6, INK = 0x12151f, NAVY = 0x2a3350;
+export const CORAL = 0xff5b3a, ORANGE = CORAL, CREAM = 0xf4f0e8, INK = 0x14171f, NAVY = 0x14171f;
+const _bg = new THREE.Color();
 
 // ---------- math helpers ----------
 export const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
@@ -66,12 +67,13 @@ function estimate(txt) {
   }
   const end = plain.trim().slice(-1);
   const pause = '.?!:'.includes(end) ? .34 : end === ',' ? .16 : 0;
-  return Math.max(.7, .22 + syl * .155 + pause);
+  return Math.max(.8, .25 + syl * .17 + pause);
 }
 function parseCap(c) {
   if (typeof c === 'string') c = { t: c };
   if (c.wait != null) return { wait: c.wait };
-  const html = c.t.replace(/&/g, '&amp;').replace(/\*(.+?)\*/g, '<b>$1</b>').replace(/_(.+?)_/g, '<u>$1</u>').replace(/\|/g, '<br>');
+  const html = c.t.replace(/&/g, '&amp;').replace(/\*(.+?)\*/g, '<b>$1</b>').replace(/\|/g, '<br>');
+  if ((c.t.match(/\*/g) || []).length > 2) console.error('CAPTION: more than one coral expression: ' + c.t);
   return { html, d: c.d ?? estimate(c.t), cls: c.cls || '', y: c.y, raw: c.t.replace(/[*_]/g, '').replace(/\|/g, ' ') };
 }
 
@@ -102,7 +104,7 @@ export class Engine {
     const renderer = this.renderer = new THREE.WebGLRenderer({ canvas, antialias: false, preserveDrawingBuffer: true, powerPreference: 'high-performance' });
     renderer.setPixelRatio(pr); renderer.setSize(W, H, false);
     renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMapping = THREE.LinearToneMapping;   // exact brand colours (navy backgrounds), flat illustrated look
     const rt = new THREE.WebGLRenderTarget(W * pr, H * pr, { type: THREE.HalfFloatType, samples: 4 });
     const composer = this.composer = new EffectComposer(renderer, rt);
     composer.setPixelRatio(pr); composer.setSize(W, H);
@@ -138,7 +140,8 @@ export class Engine {
     const eng = this;
     const ctx = {
       shot, scene, cam, env: this.envRoom, renderer: this.renderer,
-      post: { bloom: .45, radius: .55, threshold: .92, exposure: 1, vig: .85, grain: .045, ca: .004, tint: [1, 1, 1] },
+      post: { bloom: .45, radius: .55, threshold: .92, exposure: 1, vig: .35, grain: 0, ca: 0, tint: [1, 1, 1] },
+      bg: INK,
       fade: 0, fadeColor: '#000', capY: null, brand: 1,
       hud(html, cls = '', style = '') { const el = document.createElement('div'); el.className = cls; el.innerHTML = html; if (style) el.style.cssText = style; hudEl.appendChild(el); return el; },
       proj(v) { const p = v.clone().project(cam); return { x: (p.x * .5 + .5) * W, y: (-p.y * .5 + .5) * H, z: p.z }; },
@@ -164,13 +167,15 @@ export class Engine {
     const b = shot.built || this.build(shot);
     const { ctx } = b;
     if (this.activeHud !== b.hudEl) { if (this.activeHud) this.activeHud.classList.remove('on'); b.hudEl.classList.add('on'); this.activeHud = b.hudEl; }
-    ctx.fade = 0; ctx.fadeColor = '#000'; ctx.t = tl; ctx.T = t; ctx.dur = shot.dur; ctx.frame = frame;
+    ctx.fade = 0; ctx.fadeColor = '#14171F'; ctx.t = tl; ctx.T = t; ctx.dur = shot.dur; ctx.frame = frame;
     b.update && b.update(tl, ctx);
     ctx.cam.updateMatrixWorld(true);
     const p = ctx.post;
     this.bloom.strength = p.bloom; this.bloom.radius = p.radius; this.bloom.threshold = p.threshold; this.bloom.enabled = p.bloom > 0.001;
-    this.renderer.toneMappingExposure = p.exposure;
-    const u = this.finish.uniforms; u.uTime.value = frame; u.uVig.value = p.vig; u.uGrain.value = p.grain; u.uCA.value = p.ca; u.uTint.value.set(p.tint[0], p.tint[1], p.tint[2]);
+    const EXP = p.exposure * 1.7; this.renderer.toneMappingExposure = EXP;
+    if (ctx.bg != null) { _bg.setHex(ctx.bg).multiplyScalar(1 / EXP); if (!ctx.scene.background || !ctx.scene.background.isColor) ctx.scene.background = new THREE.Color(); ctx.scene.background.copy(_bg);
+      const f = ctx.scene.fog; if (f && f.color.r + f.color.g + f.color.b < .15) f.color.copy(_bg); }
+    const u = this.finish.uniforms; u.uTime.value = frame; u.uVig.value = p.vig; u.uGrain.value = 0; u.uCA.value = 0; u.uTint.value.set(p.tint[0], p.tint[1], p.tint[2]);
     this.renderPass.scene = ctx.scene; this.renderPass.camera = ctx.cam;
     this.composer.render();
     // overlays
@@ -185,13 +190,13 @@ export class Engine {
     const el = this.capEl;
     if (!cur) { if (this.capKey !== null) { el.innerHTML = ''; this.capKey = null; } el.style.opacity = 0; return; }
     const key = shot.i + ':' + idx;
-    if (this.capKey !== key) { el.innerHTML = cur.html; el.className = cur.cls; this.capKey = key; }
+    if (this.capKey !== key) { el.innerHTML = cur.html; el.className = cur.cls || ''; el.parentElement.className = cur.cls ? 'c-' + cur.cls : ''; this.capKey = key; }
     const k = tl - cur.t0, nx = shot.caps[idx + 1];
     const gapAfter = !nx || nx.t0 - cur.t1 > .02;
-    let op = seg(k, 0, .06); if (gapAfter) op *= 1 - seg(tl, cur.t1 - .1, cur.t1);
-    const sc = lerp(.8, 1, eback(seg(k, 0, .17)));
+    let op = seg(k, 0, .14); if (gapAfter) op *= 1 - seg(tl, cur.t1 - .1, cur.t1);
+    const rise = lerp(10, 0, eo(seg(k, 0, .22)));
     el.style.opacity = op.toFixed(3);
-    el.style.transform = `scale(${sc.toFixed(4)})`;
+    el.style.transform = `translateY(${rise.toFixed(2)}px)`;
     this.capWrap.style.top = (cur.y ?? ctx.capY ?? shot.capY ?? 598) + 'px';
   }
 }

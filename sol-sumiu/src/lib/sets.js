@@ -24,9 +24,9 @@ export function makeDaySky(scene, { elevation = 62, azimuth = 200, pr = 2 } = {}
       void main(){ vec3 d = normalize(vD); float h = max(d.y, 0.);
         vec3 col = mix(vec3(.36, .62, .98), vec3(.03, .19, .62), pow(h, .34));
         col = mix(col, vec3(.70, .84, .98), exp(-h * 16.) * .55);
-        float s = max(dot(d, normalize(uSun)), 0.); col += vec3(1., .9, .7) * (pow(s, 40.) * .35 + pow(s, 900.) * 3.);
-        float cl = smoothstep(.56, .86, fbm(vec3(d.xz / (h + .25) * 1.1, 1.7)) * .5 + .5) * smoothstep(.03, .3, h) * .75;
-        col = mix(col, vec3(.97), cl);
+        float s = max(dot(d, normalize(uSun)), 0.); col += vec3(1., .93, .78) * (pow(s, 40.) * .25 + smoothstep(.9994, .9996, s) * 1.2);
+        float cl = smoothstep(.64, .67, fbm(vec3(d.xz / (h + .25) * 1.1, 1.7)) * .5 + .5) * smoothstep(.03, .3, h) * .92;
+        col = mix(col, vec3(.957, .941, .91), cl);
         gl_FragColor = vec4(col * uDay, 1.); }` }));
   sky.renderOrder = -30;
   const stars = makeStars({ pr, count: 5200, size: 1.25 }); const dome = makeSkyDome(.55);
@@ -45,7 +45,7 @@ export function makeSolarFarm(c, { rows = 9, cols = 7, azimuth = 35, elevation =
   const g = new THREE.Group(); const pr = c.renderer.getPixelRatio();
   const gt = TEX.ground.clone(); gt.wrapS = gt.wrapT = THREE.RepeatWrapping; gt.repeat.set(70, 70); gt.needsUpdate = true;
   const gb = TEX.groundBump.clone(); gb.wrapS = gb.wrapT = THREE.RepeatWrapping; gb.repeat.set(70, 70); gb.needsUpdate = true;
-  const ground = new THREE.Mesh(new THREE.PlaneGeometry(900, 900), std(0xd9c6a6, { map: gt, bumpMap: gb, bumpScale: 1.2, roughness: .95 })); ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; g.add(ground);
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(900, 900), std(0xdcc9a3, { roughness: .95 })); ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; g.add(ground);
   // panels (instanced): tables of 2.2 x 1.25, tilted towards the sun
   const pm = std(0xffffff, { map: panelTex(), roughness: .18, metalness: .55, envMap: c.env, envMapIntensity: 1.1 });
   const n = rows * cols; const panel = new THREE.InstancedMesh(new THREE.BoxGeometry(2.3, .05, 1.3), pm, n); panel.castShadow = panel.receiveShadow = true;
@@ -61,11 +61,11 @@ export function makeSolarFarm(c, { rows = 9, cols = 7, azimuth = 35, elevation =
   const hillM = std(0xb9a688, { roughness: 1 }); const R = rng(9);
   for (let i = 0; i < 9; i++) { const h = new THREE.Mesh(new THREE.SphereGeometry(1, 24, 12), hillM); const a = -Math.PI * .95 + i / 8 * Math.PI * .9; h.position.set(Math.cos(a) * 170 * (1 + R() * .3), -4, Math.sin(a) * 170 - 40); h.scale.set(60 + R() * 50, 14 + R() * 16, 40); g.add(h); }
   const hut = new THREE.Group(); hut.add(box(3.4, 2.4, 2.6, std(0xe9e3d6), 0, 1.2, 0), box(3.7, .18, 2.9, std(0x3a4252), 0, 2.48, 0), box(.9, 1.7, .06, std(0x2a3352), -.6, .85, 1.31));
-  const win = box(1.1, .7, .06, std(0x0b1220, { emissive: 0xffb060, emissiveIntensity: 0, roughness: .2 }), .9, 1.45, 1.31); hut.add(win);
+  const win = box(1.1, .7, .06, std(0x0b1220, { emissive: 0xffd27a, emissiveIntensity: 0, roughness: .2 }), .9, 1.45, 1.31); hut.add(win);
   hut.position.set(-12.5, 0, -7); hut.rotation.y = .5; g.add(hut);
   const poleM = std(0x555c66, { metalness: .5, roughness: .5 }); const beacons = [];
   for (let i = 0; i < 4; i++) { const p = new THREE.Group(); p.add(cyl(.12, .2, 13, poleM, 0, 6.5, 0, 10), box(3.2, .14, .14, poleM, 0, 12.2, 0), box(2.2, .12, .12, poleM, 0, 10.8, 0));
-    const b = new THREE.Mesh(new THREE.SphereGeometry(.16, 12, 8), new THREE.MeshBasicMaterial({ color: 0xff2a1a })); b.position.y = 13.2; p.add(b); beacons.push(b);
+    const b = new THREE.Mesh(new THREE.SphereGeometry(.16, 12, 8), new THREE.MeshBasicMaterial({ color: 0xf4f0e8 })); b.position.y = 13.2; p.add(b); beacons.push(b);
     p.position.set(16 + i * 15, 0, -22 - i * 24); g.add(p); }
   c.scene.add(g);
   const sky = makeDaySky(c.scene, { pr, azimuth, elevation });
@@ -80,12 +80,12 @@ export function makeSolarFarm(c, { rows = 9, cols = 7, azimuth = 35, elevation =
     frost(k) { pm.color.setRGB(lerp(1, 1.5, k), lerp(1, 1.7, k), lerp(1, 2.1, k)); pm.roughness = lerp(.18, .7, k); ground.material.color.setRGB(lerp(.85, .78, k), lerp(.78, .86, k), lerp(.65, 1.0, k)); },
     // day: 1 = noon sunlight, 0 = Sun gone (starlight only)
     set(day, t = 0) {
-      sky.set(day, t); sun.intensity = 3.4 * day; sun.castShadow = day > .02; hemi.intensity = lerp(.1, 1.0, day); rim.intensity = .5 * (1 - day); hemi.color.set(day > .5 ? 0x9cc4ff : 0x6f86c8); hemi.groundColor.set(day > .5 ? 0xb59a70 : 0x20283c);
+      if (day > .5) c.post.exposure = .78; sky.set(day, t); sun.intensity = 3.4 * day; sun.castShadow = day > .02; hemi.intensity = lerp(.1, 1.0, day); rim.intensity = .5 * (1 - day); hemi.color.set(day > .5 ? 0x9cc4ff : 0x6f86c8); hemi.groundColor.set(day > .5 ? 0xb59a70 : 0x20283c);
       fog.color.set(day > .5 ? 0xa9c8ee : 0x04060c); fog.near = day > .5 ? 90 : 30; fog.far = day > .5 ? 900 : 260;
       glow.material.opacity = day; glow.visible = day > .01; pm.envMapIntensity = lerp(.06, 1.1, day);
       c.scene.background = new THREE.Color(day > .5 ? 0x8fb8e8 : 0x010206);
       win.material.emissiveIntensity = day > .5 ? 0 : 2.2;
-      const bl = (Math.sin(t * 4.2) > .2 ? 1 : .15) * (day > .5 ? .0 : 1); beacons.forEach(b => b.material.color.setRGB(2.6 * bl + .1, .12 * bl, .08 * bl));
+      const bl = (Math.sin(t * 4.2) > .2 ? 1 : .15) * (day > .5 ? .0 : 1); beacons.forEach(b => b.material.color.setRGB(1.6 * bl + .1, 1.55 * bl + .1, 1.45 * bl + .1));
     },
   };
 }
@@ -125,8 +125,8 @@ export function makeRoom(c) {
   const side = box(.2, 5, 10, wallM, -5.2, 2.5, 2); g.add(side); const ceil = box(14, .2, 10, std(0xefe9dc), 0, 4.4, 2); g.add(ceil);
   // table + chair + lunch
   const table = new THREE.Group(); table.add(box(2.1, .07, 1.0, woodM, 0, .78, 0)); for (const [x, z] of [[-.95, -.4], [.95, -.4], [-.95, .4], [.95, .4]]) table.add(box(.07, .76, .07, woodM, x, .38, z));
-  const plate = cyl(.17, .14, .025, std(0xf7f3ec, { roughness: .3 }), -.05, .83, .12, 40); const food = ball(.09, std(0xd98a3a, { roughness: .9 }), -.08, .86, .12); food.scale.set(1.2, .4, 1); const salad = ball(.06, std(0x4f9a4a, { roughness: .9 }), .03, .86, .08); salad.scale.set(1, .5, 1);
-  const glass = cyl(.04, .034, .13, new THREE.MeshStandardMaterial({ color: 0xcfe8ff, transparent: true, opacity: .38, roughness: .05, metalness: .1, envMap: c.env, envMapIntensity: 1.5 }), .42, .88, -.1); glass.castShadow = false; const juice = cyl(.035, .03, .08, std(0xffb347, { roughness: .3 }), .42, .86, -.1);
+  const plate = cyl(.17, .14, .025, std(0xf7f3ec, { roughness: .3 }), -.05, .83, .12, 40); const food = ball(.09, std(0xc4975a, { roughness: .9 }), -.08, .86, .12); food.scale.set(1.2, .4, 1); const salad = ball(.06, std(0x4f9a4a, { roughness: .9 }), .03, .86, .08); salad.scale.set(1, .5, 1);
+  const glass = cyl(.04, .034, .13, new THREE.MeshStandardMaterial({ color: 0xcfe8ff, transparent: true, opacity: .38, roughness: .05, metalness: .1, envMap: c.env, envMapIntensity: 1.5 }), .42, .88, -.1); glass.castShadow = false; const juice = cyl(.035, .03, .08, std(0xe3c25a, { roughness: .3 }), .42, .86, -.1);
   table.add(plate, food, salad, glass, juice); table.position.set(0, 0, .55); g.add(table);
   c.scene.add(g);
   // outside: sky seen through the window
@@ -135,5 +135,5 @@ export function makeRoom(c) {
   const hemi = new THREE.HemisphereLight(0xfff4e2, 0x8a6a4c, .75); c.scene.add(hemi);
   const fill = new THREE.PointLight(0xffe9c8, 6, 12, 1.6); fill.position.set(0, 2.4, 3.5); c.scene.add(fill);
   return { g, sky, sun, hemi, fill, table,
-    set(day, t = 0) { sky.set(day, t); sun.intensity = 5.5 * day; sun.castShadow = day > .02; hemi.intensity = lerp(.035, .75, day); fill.intensity = lerp(.0, 6, day); c.scene.background = new THREE.Color(day > .5 ? 0x8fb8e8 : 0x010206); } };
+    set(day, t = 0) { if (day > .5) c.post.exposure = .8; sky.set(day, t); sun.intensity = 5.5 * day; sun.castShadow = day > .02; hemi.intensity = lerp(.035, .75, day); fill.intensity = lerp(.0, 6, day); c.scene.background = new THREE.Color(day > .5 ? 0x8fb8e8 : 0x010206); } };
 }

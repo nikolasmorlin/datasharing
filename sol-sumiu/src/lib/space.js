@@ -1,6 +1,7 @@
 // Space assets: stars, Sun, Earth (day/night/frozen), Moon, Jupiter, spacetime grid.
 import * as THREE from 'three';
 import { TEX, rng } from '../engine.js';
+export const BRAND = { navy: 0x14171f, creme: 0xf4f0e8, coral: 0xff5b3a, gold: 0xffc861, sky: 0x8fb3e8 };
 
 export const NOISE = /* glsl */`
 vec3 mod289(vec3 x){return x-floor(x*(1./289.))*289.;} vec4 mod289(vec4 x){return x-floor(x*(1./289.))*289.;}
@@ -26,7 +27,7 @@ export function makeStars({ count = 4500, radius = 1500, seed = 5, size = 1, pr 
     const z = r() * 2 - 1, a = r() * Math.PI * 2, s = Math.sqrt(1 - z * z);
     pos.set([s * Math.cos(a) * radius, z * radius, s * Math.sin(a) * radius], i * 3);
     const m = Math.pow(r(), 7); sz[i] = (.9 + m * 3.6 + r() * .5) * size; ph[i] = r() * 6.283;
-    const k = r(); const c = k < .15 ? [1, .78, .6] : k < .4 ? [.72, .82, 1] : [1, .97, .92]; const b = .6 + m * 2.8 + r() * .4;
+    const c = [.96, .94, .91]; const b = .55 + m * 2.2 + r() * .35;
     col.set([c[0] * b, c[1] * b, c[2] * b], i * 3);
   }
   const g = new THREE.BufferGeometry();
@@ -36,16 +37,14 @@ export function makeStars({ count = 4500, radius = 1500, seed = 5, size = 1, pr 
     uniforms: { uTime: { value: 0 }, uOp: { value: 1 }, uPR: { value: pr } }, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
     vertexShader: `attribute vec3 aCol; attribute float aSize, aPh; uniform float uTime, uPR; varying vec3 vC;
       void main(){ vC = aCol * (.82 + .18 * sin(uTime * (1.2 + fract(aPh) * 2.) + aPh)); vec4 mv = modelViewMatrix * vec4(position, 1.); gl_Position = projectionMatrix * mv; gl_PointSize = aSize * uPR; }`,
-    fragmentShader: `uniform float uOp; varying vec3 vC; void main(){ float d = length(gl_PointCoord - .5) * 2.; float a = pow(max(0., 1. - d), 2.2); gl_FragColor = vec4(vC * a * uOp, 1.); }`,
+    fragmentShader: `uniform float uOp; varying vec3 vC; void main(){ float d = length(gl_PointCoord - .5) * 2.; float a = smoothstep(1., .55, d); gl_FragColor = vec4(vC * a * uOp, 1.); }`,
   });
   const p = new THREE.Points(g, m); p.frustumCulled = false; p.renderOrder = -10;
   p.userData.set = (t, op = 1) => { m.uniforms.uTime.value = t; m.uniforms.uOp.value = op; };
   return p;
 }
-export function makeSkyDome(op = .5, radius = 1800) {
-  const m = new THREE.Mesh(new THREE.SphereGeometry(radius, 48, 32), new THREE.MeshBasicMaterial({ map: TEX.sky, side: THREE.BackSide, color: new THREE.Color(op, op, op), depthWrite: false, fog: false }));
-  m.renderOrder = -20; m.userData.set = o => m.material.color.setScalar(o);
-  return m;
+export function makeSkyDome() {   // (brand: no photographic sky) kept as a no-op for API compatibility
+  const m = new THREE.Object3D(); m.userData.set = () => {}; return m;
 }
 
 // ---------- Sun ----------
@@ -54,31 +53,24 @@ export function makeSun(R = 1) {
   const u = { uTime: { value: 0 }, uPower: { value: 1 } };
   const body = new THREE.Mesh(new THREE.SphereGeometry(R, 96, 64), new THREE.ShaderMaterial({
     uniforms: u,
-    vertexShader: `varying vec3 vP, vN, vV; void main(){ vP = position; vec4 w = modelMatrix * vec4(position, 1.); vN = normalize(mat3(modelMatrix) * normal); vV = normalize(cameraPosition - w.xyz); gl_Position = projectionMatrix * viewMatrix * w; }`,
-    fragmentShader: NOISE + `uniform float uTime, uPower; varying vec3 vP, vN, vV;
-      void main(){ vec3 p = normalize(vP);
-        float big = fbm(p * 2.2 + vec3(0., uTime * .03, 0.)) * .5 + .5;
-        float gran = snoise(p * 16. + vec3(uTime * .12)) * .5 + .5; float gran2 = snoise(p * 34. - vec3(uTime * .2)) * .5 + .5;
-        float spot = smoothstep(.55, .75, snoise(p * 2.6 + 7.3)) * smoothstep(.3, .6, snoise(p * 6. + 1.7) * .5 + .5);
-        vec3 col = mix(vec3(.85, .16, .01), vec3(1., .5, .07), big);
-        col = mix(col, vec3(1., .78, .3), pow(gran, 2.5) * .6 + pow(gran2, 3.) * .25);
-        col *= 1. - spot * .55;
-        float mu = max(dot(normalize(vN), normalize(vV)), 0.);
-        col *= (.35 + .9 * pow(mu, .6));
-        col += vec3(1., .45, .1) * pow(1. - mu, 3.) * .6;
-        gl_FragColor = vec4(col * uPower * .95, 1.); }`,
+    vertexShader: `varying vec3 vN, vV, vP; void main(){ vP = position; vec4 w = modelMatrix * vec4(position, 1.); vN = normalize(mat3(modelMatrix) * normal); vV = normalize(cameraPosition - w.xyz); gl_Position = projectionMatrix * viewMatrix * w; }`,
+    fragmentShader: NOISE + `uniform float uTime, uPower; varying vec3 vN, vV, vP;
+      void main(){ float mu = max(dot(normalize(vN), normalize(vV)), 0.);
+        float blob = smoothstep(.15, .35, snoise(normalize(vP) * 2.4 + vec3(0., uTime * .05, 0.)));
+        vec3 col = mix(vec3(1., .74, .32), vec3(1., .93, .70), smoothstep(.15, .8, mu));
+        col = mix(col, vec3(1., .97, .86), smoothstep(.75, .95, mu) * .7);
+        col = mix(col, col * .975, blob * smoothstep(.2, .6, mu));
+        gl_FragColor = vec4(col * uPower * .56, 1.); }`,
   }));
   g.add(body);
-  const corona = new THREE.Mesh(new THREE.PlaneGeometry(R * 9, R * 9), new THREE.ShaderMaterial({
+  const corona = new THREE.Mesh(new THREE.PlaneGeometry(R * 7, R * 7), new THREE.ShaderMaterial({
     uniforms: u, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
     vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.); }`,
-    fragmentShader: NOISE + `uniform float uTime, uPower; varying vec2 vUv;
-      void main(){ vec2 c = (vUv - .5) * 9.; float r = length(c); float a = atan(c.y, c.x);
-        float rays = snoise(vec3(cos(a) * 2.2, sin(a) * 2.2, uTime * .05 + r * .25)) * .5 + .5;
-        float rays2 = snoise(vec3(cos(a) * 7., sin(a) * 7., uTime * .08)) * .5 + .5;
-        float glow = exp(-(r - 1.) * 3.4) * .7 + exp(-(r - 1.) * 1.05) * .16 * (.35 + rays * 1.1 + rays2 * .4);
-        glow *= smoothstep(4.5, 2.4, r) * step(.98, r) + (1. - step(.98, r)) * .0;
-        gl_FragColor = vec4(vec3(1., .5, .15) * glow * uPower, 1.); }`,
+    fragmentShader: `uniform float uTime, uPower; varying vec2 vUv;
+      void main(){ float r = length(vUv - .5) * 7.; if (r < .99) discard;
+        float soft = exp(-(r - 1.) * 2.2) * .55;
+        float ring1 = smoothstep(.06, 0., abs(r - (1.35 + .04 * sin(uTime * 1.1)))) * .16, ring2 = smoothstep(.05, 0., abs(r - (1.8 + .05 * sin(uTime * .8 + 1.)))) * .08;
+        gl_FragColor = vec4(vec3(1., .78, .40) * (soft + ring1 + ring2) * smoothstep(3.4, 2.2, r) * uPower * .5, 1.); }`,
   }));
   corona.renderOrder = 5; g.add(corona);
   g.userData = { body, corona, u, set(t, power, cam) { u.uTime.value = t; u.uPower.value = power; if (cam) corona.quaternion.copy(cam.quaternion); body.rotation.y = t * .02; } };
@@ -89,7 +81,7 @@ export function makeSun(R = 1) {
 export function makeEarth(R = 1, { seg = 96 } = {}) {
   const g = new THREE.Group();
   const u = {
-    tDay: { value: TEX.day }, tNight: { value: TEX.night }, tIce: { value: TEX.ice || TEX.day }, tWater: { value: TEX.water }, tClouds: { value: TEX.clouds },
+    tDay: { value: TEX.day }, tNight: { value: TEX.lights }, tIce: { value: TEX.ice || TEX.day }, tWater: { value: TEX.water }, tClouds: { value: TEX.clouds },
     uSunDir: { value: new THREE.Vector3(1, 0, 0) }, uSun: { value: 1 }, uIce: { value: 0 }, uCity: { value: 1 }, uAmb: { value: .02 }, uCloud: { value: 0 }, uAtm: { value: 1 }, uClouds: { value: 1 }, uRim: { value: 0 },
   };
   const vs = `varying vec2 vUv; varying vec3 vN, vW; void main(){ vUv = uv; vec4 w = modelMatrix * vec4(position, 1.); vW = w.xyz; vN = normalize(mat3(modelMatrix) * normal); gl_Position = projectionMatrix * viewMatrix * w; }`;
@@ -97,26 +89,24 @@ export function makeEarth(R = 1, { seg = 96 } = {}) {
     uniforms: u, vertexShader: vs,
     fragmentShader: `uniform sampler2D tDay, tNight, tIce, tWater, tClouds; uniform vec3 uSunDir; uniform float uSun, uIce, uCity, uAmb, uCloud, uAtm, uClouds, uRim; varying vec2 vUv; varying vec3 vN, vW;
       void main(){ vec3 N = normalize(vN), Vd = normalize(cameraPosition - vW), L = normalize(uSunDir);
-        float ndl = dot(N, L); float day = smoothstep(-.1, .3, ndl) * uSun;
+        float ndl = dot(N, L);
+        float day = (smoothstep(-.06, .02, ndl) * .62 + smoothstep(.22, .30, ndl) * .23 + smoothstep(.55, .63, ndl) * .15) * uSun;
         vec3 base = mix(texture2D(tDay, vUv).rgb, texture2D(tIce, vUv).rgb, uIce);
-        float water = texture2D(tWater, vUv).r;
-        float spec = pow(max(dot(N, normalize(L + Vd)), 0.), 90.) * water * (1. - uIce * .6) * uSun;
         float cl = texture2D(tClouds, vec2(vUv.x + uCloud, vUv.y)).r * uClouds;
-        float clsh = texture2D(tClouds, vec2(vUv.x + uCloud + .004, vUv.y + .002)).r * uClouds;
-        vec3 lit = base * (day * 1.35 * (1. - clsh * .35) + uAmb) + vec3(1., .88, .7) * spec * .55;
-        lit = mix(lit, vec3(1.) * (day * 1.3 + uAmb * 1.6), cl * .92);
-        float nm = 1. - smoothstep(-.12, .18, ndl) * uSun;
-        vec3 night = max(texture2D(tNight, vUv).rgb - vec3(.03, .045, .07), 0.);
-        lit += (pow(night, vec3(1.15)) * vec3(1., .74, .42) * 5.5 + night * night * vec3(1., .9, .7) * 6.) * uCity * nm * (1. - cl * .5);
-        float fr = pow(1. - max(dot(N, Vd), 0.), 3.2);
-        lit += vec3(.28, .55, 1.) * fr * (.05 + 1.1 * day) * uAtm + vec3(.16, .3, .62) * fr * uRim;
+        vec3 lit = base * (day * .62 + uAmb);
+        lit = mix(lit, vec3(.957, .941, .91) * (day * .6 + uAmb * 1.4), cl);
+        float nm = 1. - smoothstep(-.1, .05, ndl) * uSun;
+        float dots = texture2D(tNight, vUv).r;
+        lit += vec3(1., .80, .42) * dots * .55 * uCity * nm * (1. - cl * .7);
+        float fr = smoothstep(.55, 1., 1. - max(dot(N, Vd), 0.));
+        lit += vec3(.34, .55, .9) * fr * (.06 + .7 * day) * uAtm + vec3(.30, .42, .66) * fr * uRim * .55;
         gl_FragColor = vec4(lit, 1.); }`,
   }));
   const atm = new THREE.Mesh(new THREE.SphereGeometry(R * 1.13, 64, 48), new THREE.ShaderMaterial({
     uniforms: u, vertexShader: vs, side: THREE.BackSide, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
     fragmentShader: `uniform vec3 uSunDir; uniform float uSun, uAtm; varying vec3 vN, vW;
       void main(){ vec3 N = normalize(vN), Vd = normalize(cameraPosition - vW);
-        float k = smoothstep(0., .466, abs(dot(N, Vd))); k = pow(k, 2.6);
+        float k = smoothstep(0., .466, abs(dot(N, Vd))); k = pow(k, 3.2) * .7;
         float day = smoothstep(-.35, .5, dot(N, normalize(uSunDir))) * uSun;
         gl_FragColor = vec4(vec3(.25, .52, 1.) * k * (.03 + 1.25 * day) * uAtm, 1.); }`,
   }));
@@ -128,7 +118,7 @@ export function makeEarth(R = 1, { seg = 96 } = {}) {
 
 // ---------- Moon ----------
 export function makeMoon(R = 1) {
-  const m = new THREE.Mesh(new THREE.SphereGeometry(R, 96, 64), new THREE.MeshStandardMaterial({ map: TEX.moon, bumpMap: TEX.moonBump, bumpScale: 2.2, roughness: 1, metalness: 0 }));
+  const m = new THREE.Mesh(new THREE.SphereGeometry(R, 96, 64), new THREE.MeshStandardMaterial({ map: TEX.moon, bumpMap: TEX.moonBump, bumpScale: .8 }));
   return m;
 }
 
@@ -140,19 +130,17 @@ export function makeJupiter(R = 1) {
     vertexShader: `varying vec3 vP, vN, vW; void main(){ vP = position; vec4 w = modelMatrix * vec4(position, 1.); vW = w.xyz; vN = normalize(mat3(modelMatrix) * normal); gl_Position = projectionMatrix * viewMatrix * w; }`,
     fragmentShader: NOISE + `uniform vec3 uSunDir; uniform float uSun, uAmb, uTime; varying vec3 vP, vN, vW;
       void main(){ vec3 p = normalize(vP); float lat = asin(p.y); float lon = atan(p.z, p.x);
-        float warp = fbm(vec3(p.x * 2.4, p.y * 7., p.z * 2.4) + vec3(uTime * .01, 0., 0.));
-        float curl = snoise(vec3(p.x * 9., p.y * 22., p.z * 9.) + warp * 1.5);
-        float v = lat * 10.5 + warp * .95 + curl * .1;
-        float b1 = sin(v * 2.) * .5 + .5, b2 = sin(v * 5.1 + 1.3) * .5 + .5, b3 = sin(v * 11. + .4) * .5 + .5;
-        vec3 col = mix(vec3(.80, .68, .52), vec3(.46, .25, .13), smoothstep(.28, .72, b1));
-        col = mix(col, vec3(.90, .84, .72), b2 * .42); col = mix(col, vec3(.30, .17, .11), b3 * .3 * smoothstep(.2, .8, b1)); col *= .9 + .25 * curl;
-        col = mix(col, vec3(.52, .50, .54), smoothstep(.95, 1.45, abs(lat)));
+        float warp = snoise(vec3(p.x * 2., p.y * 5., p.z * 2.) + vec3(uTime * .01, 0., 0.));
+        float v = lat * 3.4 + warp * .07;
+        float band = floor(v * 2.2 + 8.);
+        float k = fract(sin(band * 12.9898) * 43758.5453);
+        vec3 col = k < .33 ? vec3(.93, .87, .76) : k < .66 ? vec3(.80, .66, .50) : vec3(.62, .46, .34);
+        col = mix(col, vec3(.70, .70, .74), smoothstep(1.05, 1.35, abs(lat)));
         vec2 sp = vec2(lon - 1.9, lat + .36); float sd = length(sp * vec2(1., 1.9));
-        float swirl = snoise(vec3(sp * 14., 3.)) * .03;
-        col = mix(col, vec3(.66, .2, .09), smoothstep(.2, .11, sd + swirl) * .92); col = mix(col, vec3(.95, .85, .72), smoothstep(.035, .0, abs(sd - .215)) * .5);
+        col = mix(col, vec3(.55, .33, .27), step(sd, .16)); col = mix(col, vec3(.93, .87, .76), step(abs(sd - .19), .018));
         vec3 N = normalize(vN), Vd = normalize(cameraPosition - vW); float ndl = dot(N, normalize(uSunDir));
-        float lit = smoothstep(-.08, .6, ndl) * uSun * .95 + uAmb;
-        col *= lit * (.55 + .45 * pow(max(dot(N, Vd), 0.), .5));
+        float lit = (smoothstep(-.04, .04, ndl) * .7 + smoothstep(.35, .43, ndl) * .3) * uSun * .58 + uAmb;
+        col *= lit;
         gl_FragColor = vec4(col, 1.); }`,
   }));
   m.rotation.z = -3 * Math.PI / 180;
@@ -161,7 +149,7 @@ export function makeJupiter(R = 1) {
 }
 
 // ---------- spacetime grid (gravity well that "unwinds" at the speed of light) ----------
-export function makeGrid({ size = 60, seg = 220, well = 2.2, a = 2.4, color = 0x5fa8ff, front = 0xff6a3a } = {}) {
+export function makeGrid({ size = 60, seg = 220, well = 2.2, a = 2.4, color = 0x7fa6dd, front = 0xffc861 } = {}) {
   const geo = new THREE.PlaneGeometry(size, size, seg, seg); geo.rotateX(-Math.PI / 2);
   const u = { uWell: { value: well }, uA: { value: a }, uFront: { value: -1 }, uCol: { value: new THREE.Color(color) }, uFrontCol: { value: new THREE.Color(front) }, uOp: { value: 1 }, uCell: { value: 1 }, uSize: { value: size }, uEarth: { value: new THREE.Vector3(999, 0, 0) }, uEarthWell: { value: .25 } };
   const m = new THREE.Mesh(geo, new THREE.ShaderMaterial({
@@ -188,7 +176,7 @@ export function makeGrid({ size = 60, seg = 220, well = 2.2, a = 2.4, color = 0x
 }
 
 // soft additive glow sprite (billboard)
-export function makeGlow(size = 1, color = 0xff6a3a, power = 2.) {
+export function makeGlow(size = 1, color = 0xffc861, power = 2.) {
   const m = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex(), color, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
   m.scale.setScalar(size); m.userData.power = power; return m;
 }

@@ -6,7 +6,7 @@ const mat = (color, o = {}) => new THREE.MeshStandardMaterial({ color, roughness
 const mesh = (g, m) => { const x = new THREE.Mesh(g, m); x.castShadow = true; x.receiveShadow = true; return x; };
 
 export function makeHelena({ outfit = 'vest', env = null } = {}) {
-  const SKIN = mat(0x8f5b3c, { roughness: .62 }), HAIR = mat(0x17110f, { roughness: .5 }), ORANGE = mat(0xf2552c, { roughness: .8 }), NAVY = mat(0x2a3352, { roughness: .85 }),
+  const SKIN = mat(0x8f5b3c, { roughness: .62 }), HAIR = mat(0x17110f, { roughness: .5 }), ORANGE = mat(0xe3b341, { roughness: .8 }), NAVY = mat(0x2a3352, { roughness: .85 }),
     DARK = mat(0x1b2030, { roughness: .85 }), WHITE = mat(0xf2ede4, { roughness: .6 }), EYE = mat(0x0c0a0a, { roughness: .25, envMapIntensity: .5 }), LIP = mat(0x5a2a22, { roughness: .6 });
   const parka = outfit === 'parka';
   const sleeve = parka ? ORANGE : NAVY;
