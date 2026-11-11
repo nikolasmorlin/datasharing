@@ -5,7 +5,7 @@ const args = process.argv.slice(2); const part = args[0];
 const opt = (k, d) => { const i = args.indexOf('--' + k); return i >= 0 ? args[i + 1] : d; };
 const dsf = Number(opt('dsf', 2)), workers = Number(opt('workers', 3)), crf = opt('crf', '16');
 const SCR = '/tmp/claude-0/-home-user-datasharing/8e34cf23-8b6d-5950-994d-34cbecd5a73f/scratchpad';
-const out = opt('out', path.join(SCR, `parte${part}.mp4`));
+const out = path.resolve(opt('out', path.join(SCR, `parte${part}.mp4`)));
 const ff = (file, fps) => spawn('ffmpeg', ['-v', 'error', '-y', '-f', 'image2pipe', '-c:v', 'mjpeg', '-framerate', String(fps), '-i', '-', '-vf', 'scale=out_color_matrix=bt709:out_range=tv,format=yuv420p', '-c:v', 'libx264', '-preset', 'medium', '-crf', crf, '-g', '60', '-colorspace', 'bt709', '-color_primaries', 'bt709', '-color_trc', 'bt709', '-movflags', '+faststart', file], { stdio: ['pipe', 'inherit', 'inherit'] });
 if (opt('worker')) {
   const [a, b] = opt('worker').split('-').map(Number); const seg = opt('seg');
@@ -28,6 +28,7 @@ await Promise.all(Array.from({ length: workers }, (_, i) => new Promise((res, re
   p.on('close', c => c === 0 ? res() : rej(new Error('worker ' + i + ' exit ' + c)));
 })));
 const list = out + '.txt'; fs.writeFileSync(list, segs.filter(Boolean).map(s => `file '${s}'`).join('\n'));
-await new Promise(r => spawn('ffmpeg', ['-v', 'error', '-y', '-f', 'concat', '-safe', '0', '-i', list, '-c', 'copy', '-movflags', '+faststart', out], { stdio: 'inherit' }).on('close', r));
+const code = await new Promise(r => spawn('ffmpeg', ['-v', 'error', '-y', '-f', 'concat', '-safe', '0', '-i', list, '-c', 'copy', '-movflags', '+faststart', out], { stdio: 'inherit' }).on('close', r));
+if (code !== 0 || !fs.existsSync(out)) { console.error('CONCAT FAILED; segments kept'); process.exit(1); }
 segs.filter(Boolean).forEach(s => fs.rmSync(s)); fs.rmSync(list);
 console.log(`DONE ${out} frames=${n} in ${((Date.now() - t0) / 1000).toFixed(0)}s`);
