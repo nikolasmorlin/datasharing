@@ -2,42 +2,42 @@
 
 Cada linha é um bloco de legenda (tempo de entrada → texto). Serve de guia para gravar a narração.
 
-## Parte 1 (1:37.5)
+## Parte 1 (1:48.3)
 
-- `0:01.4` O Sol acabou de sumir.
-- `0:04.7` E ninguém na Terra sabe.
-- `0:07.5` Helena trabalha numa usina solar.
-- `0:11.0` Meio-dia: produção no máximo.
-- `0:13.9` O céu continua azul.
-- `0:15.7` Pra ela, o Sol ainda está lá.
-- `0:18.7` Porque a luz leva oito minutos pra chegar aqui.
-- `0:22.1` A última luz do Sol ainda está a caminho.
-- `0:25.9` São 150 milhões de quilômetros.
-- `0:29.7` E a gravidade?
-- `0:31.3` Ela viaja na mesma velocidade: a da luz.
-- `0:35.3` Por oito minutos, nada muda.
-- `0:37.6` A Terra orbita um Sol que não existe.
-- `0:41.3` Helena almoça.
-- `0:42.9` Responde uma mensagem.
-- `0:44.9` E reclama do calor.
-- `0:47.6` Nenhum satélite consegue avisar.
-- `0:50.3` Nada viaja mais rápido que a luz.
-- `0:53.5` Falta um minuto.
-- `0:55.9` 3
-- `0:56.8` 2
-- `0:57.6` 1
-- `0:59.6` O céu apaga.
-- `1:02.6` Meio-dia. Noite total.
-- `1:05.2` A Lua some junto.
-- `1:06.8` Ela só refletia a luz do Sol.
-- `1:10.1` E a gravidade acaba no mesmo instante.
-- `1:14.1` A Terra corria a 30 km por segundo.
-- `1:16.7` Agora ela segue em linha reta.
-- `1:20.5` Júpiter ainda brilha por mais de uma hora,
-- `1:23.2` refletindo um Sol que já não existe.
-- `1:27.3` Helena olha pela janela.
-- `1:29.6` Estrelas, ao meio-dia.
-- `1:32.3` E o frio ainda nem começou.
+- `0:01.4` Imagine que o Sol acabou de sumir.
+- `0:05.0` Mas, por enquanto, ninguém na Terra sabe.
+- `0:08.4` Nem a Helena, que trabalha numa usina solar.
+- `0:12.4` É meio-dia, e a produção está no máximo.
+- `0:16.2` O céu continua azul,
+- `0:17.8` então, pra ela, o Sol ainda está lá.
+- `0:21.2` Isso porque a luz leva oito minutos pra chegar aqui.
+- `0:24.9` Ou seja, a última luz do Sol ainda está a caminho.
+- `0:29.2` Afinal, ela atravessa 150 milhões de quilômetros.
+- `0:34.4` E a gravidade? Será que ela some na hora?
+- `0:37.7` Não: ela viaja na mesma velocidade, a da luz.
+- `0:41.9` Por isso, durante oito minutos, nada muda.
+- `0:45.0` A Terra segue orbitando um Sol que não existe.
+- `0:49.2` Enquanto isso, Helena almoça,
+- `0:51.5` responde uma mensagem
+- `0:53.1` e ainda reclama do calor.
+- `0:56.3` E nenhum satélite consegue avisar,
+- `0:58.9` já que nada viaja mais rápido que a luz.
+- `1:02.5` Até que falta um minuto.
+- `1:05.4` 3
+- `1:06.2` 2
+- `1:07.1` 1
+- `1:09.1` E, de repente, o céu apaga.
+- `1:12.3` É meio-dia, mas é noite total.
+- `1:15.3` A Lua some junto,
+- `1:16.7` porque ela só refletia a luz do Sol.
+- `1:20.4` E, no mesmo instante, a gravidade acaba.
+- `1:24.4` A Terra, que corria a 30 km por segundo,
+- `1:27.0` agora segue em linha reta.
+- `1:30.4` Mesmo assim, Júpiter brilha por mais de uma hora,
+- `1:33.6` refletindo um Sol que já não existe.
+- `1:37.6` Então Helena olha pela janela
+- `1:39.9` e vê estrelas ao meio-dia.
+- `1:42.9` Só que o frio ainda nem começou.
 
 ## Parte 2 (1:32.7)
 
